@@ -11,7 +11,7 @@ An enhanced extension of the original [Advanced Noise Animation Studio](https://
 
 The original studio (Time Blindness, CVPR 2026) generates videos using only binary noise (black/white random blocks) to encode temporal patterns. That benchmark revealed that all current Video‑VLMs achieve 0% accuracy – they are completely “time‑blind”.
 
-This enhanced edition adds five additional noise types (Perlin, Gradient, Colourful, Dynamic) and a batch processing pipeline. The goal is not to make patterns easier for AI, but to increase the diversity of visual confusion and to prepare for future, purpose‑built models that might succeed on specific temporal patterns while failing on others. In other words, this tool helps researchers ask: “If a model is trained to recognise our new noise‑based patterns, will it generalise poorly to other noise types?”
+This enhanced edition adds four additional noise types (Perlin, Gradient, Colourful, Dynamic) and a batch processing pipeline. The goal is not to make patterns easier for AI, but to increase the diversity of visual confusion and to prepare for future, purpose‑built models that might succeed on specific temporal patterns while failing on others. In other words, this tool helps researchers ask: “If a model is trained to recognise our new noise‑based patterns, will it generalise poorly to other noise types?”
 
 ---
 
@@ -35,7 +35,7 @@ npm install @ffmpeg/ffmpeg @ffmpeg/core
 The application is built around three conceptual layers:
 
 ### 1. Noise Field Generation (`NoiseGenerator`)
-The original generator only supports binary noise (random black/white blocks), which produces a 2D array of intensity values (0–255) that serve as the texture for both background and foreground. . This limited texture space may have contributed to the 0% performance of current models, but it does not exhaust enough possible temporal patterns.
+The original generator only supports binary noise (random black/white blocks), which produces a 2D array of intensity values (0–255) that serve as the texture for background and foreground; in the Binary strategy these are two independently generated fields (not one shared field). . This limited texture space may have contributed to the 0% performance of current models, but it does not exhaust enough possible temporal patterns.
 
 This enhanced edition adds four smooth / coloured / time‑varying noise algorithms, which can produce visually very different motion cues. The expanded noise space allows testing whether a future “time‑aware” model truly understands temporal structure or merely overfits to binary flicker.
 
@@ -43,10 +43,10 @@ Supported algorithms:
 - **Binary** – random black/white blocks with controllable speckle size.
 - **Perlin** – smooth gradient noise with frequency, amplitude, octaves & persistence.
 - **Gradient** – linear ramp plus random jitter.
-- **Colourful** – random colour pixels at given density.
+- **Colourful** – colour spots at the given density: the noise value only gates whether a spot exists (> 0), while the colour comes from a coordinate- and time-derived colour map shared by foreground and background.
 - **Dynamic** – time‑varying block‑based hash noise (fully seamless).
 
-Each noise type exposes its own set of sliders, and the generator maintains **separate** foreground/background noise fields for content mode.
+Each noise type exposes its own set of sliders. **Field sharing differs per noise type in content mode:** Colourful, Perlin and Gradient render foreground and background from ONE shared noise field (for Colourful the foreground-density slider is disabled for exactly this reason), whereas Binary and Dynamic generate two independent fields. This distinction matters for anyone writing motion-boundary or displacement checks: for the shared-field types the foreground and background are related *within a single frame* (a foreground pixel at row y samples the same field row as a background pixel at row y - 2*O_bg, where O_bg is the background offset), so a frame-to-frame roll-match is the wrong instrument for those types.
 
 #### FAQ
 
