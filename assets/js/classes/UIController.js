@@ -141,6 +141,9 @@ export default class UIController {
         // Noise Type
         document.getElementById('noiseType').addEventListener('change', (e) => { animationState.set('noiseType', e.target.value); });
 
+        // v6: Noise Field - two independent fields vs one shared field
+        document.getElementById('noiseFieldMode').addEventListener('change', (e) => { animationState.set('noiseFieldMode', e.target.value); });
+
         // Perlin Parameters
         document.getElementById('perlinFrequency').addEventListener('input', (e) => { const v = parseFloat(e.target.value); animationState.set('perlinFrequency', v); document.getElementById('perlinFrequencyValue').textContent = v.toFixed(3); });
         document.getElementById('perlinAmplitude').addEventListener('input', (e) => { const v = parseInt(e.target.value); animationState.set('perlinAmplitude', v); document.getElementById('perlinAmplitudeValue').textContent = v; });

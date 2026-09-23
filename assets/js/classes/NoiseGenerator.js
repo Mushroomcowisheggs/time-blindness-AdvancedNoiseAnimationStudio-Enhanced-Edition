@@ -34,6 +34,16 @@ export default class NoiseGenerator {
         this.backgroundNoise = [];
         this.foregroundNoise = [];
 
+        // v6: how many noise fields the content mode uses.
+        //   'independent' (v5 behaviour, and what the original study used for binary/dynamic)
+        //       -> background and foreground are two separately drawn random fields
+        //   'shared'      (what the original study used for perlin/gradient/colourful)
+        //       -> ONE random draw, and both regions are sampled from it at their own offsets
+        // The distinction matters: with independent fields the digit region is unrelated to the
+        // background, so only motion can reveal the boundary. With a shared field the digit region is
+        // a rigid SHIFTED COPY of part of the background, so its edges are visible in a single frame.
+        this.noiseFieldMode = 'independent';
+
         // Strategy instances
         this._strategies = {
             binary: new NoiseStrategyBinary(this),
@@ -91,6 +101,28 @@ export default class NoiseGenerator {
         }
     }
     
+    makeSharedField(nowMs = null) {
+        // v6: on-demand SHARED field for content mode, built with this strategy's own generator.
+        //
+        // Strategies whose refresh() only fills ONE field (perlin, gradient) leave
+        // backgroundNoise/foregroundNoise empty, so a shared variant cannot simply copy them. Calling
+        // generateNoiseMap() gives the texture this strategy is meant to draw, which is then used for
+        // BOTH regions. Returns a Uint8ClampedArray of width*height, or null if unavailable.
+        try {
+            const m = this.generateNoiseMap();
+            if (!m || m.length !== this.width * this.height) return null;
+            this._makeSeamless(m, 'vertical');
+            return m;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // v6: true when the current settings call for ONE field instead of two
+    get usesSharedField() {
+        return this.noiseFieldMode === 'shared';
+    }
+
     async refresh(animationMode, movementDirection, nowMs = null) {
         const size = this.width * this.height;
         // Delegate refresh to active strategy

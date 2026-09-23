@@ -272,6 +272,21 @@
               </select>
             </div>
             
+            <!-- v6: how many noise fields the content mode draws -->
+            <div class="control-group">
+              <label for="noiseFieldMode">Noise Field</label>
+              <select id="noiseFieldMode" class="compact-select">
+                <option value="independent" selected>Two independent fields (fwd/bg unrelated)</option>
+                <option value="shared">One shared field (fwd = shifted bg)</option>
+              </select>
+              <div class="small-text" id="noiseFieldModeHint">
+                <b>Two independent fields:</b> the digit region is unrelated to the background, so a
+                single frame is pure noise and only motion reveals the boundary.<br>
+                <b>One shared field:</b> the digit region is a shifted copy of the background, so its
+                outline is already visible in a single frame.
+              </div>
+            </div>
+            
             <!--Noise Parameters-->
             <div id="noiseParametersContainer">
 

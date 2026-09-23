@@ -85,6 +85,12 @@ eventBus.on('state:change', ({ key, val }) => {
             noiseGen.foregroundDensity = val;
             controller.refreshNoise();
             break;
+        case 'noiseFieldMode':
+            // v6: switch between TWO independent noise fields and ONE shared field. Both regions are
+            // rebuilt, so this must regenerate the noise rather than just re-render.
+            noiseGen.noiseFieldMode = val;
+            controller.refreshNoise();
+            break;
         case 'noiseType':
             noiseGen.noiseType = val;
             document.querySelectorAll('.noise-parameters-group').forEach(g => g.style.display = 'none');

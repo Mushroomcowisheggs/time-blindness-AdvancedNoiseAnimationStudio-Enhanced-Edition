@@ -56,7 +56,9 @@ export default class NoiseStrategyDynamic extends NoiseStrategyBase {
             for (let x = 0; x < this.g.width; x += blockW) {
                 const bx = Math.floor(x / blockW) * blockW;
                 const hashBg = hash(bx, by, t, 0);
-                const hashFg = hash(bx, by, t, 1);
+                // v6: SHARED mode draws ONE field; INDEPENDENT keeps the original two draws
+                // (seed 0 for background, seed 1 for foreground).
+                const hashFg = this.g.usesSharedField ? hashBg : hash(bx, by, t, 1);
                 const amp = this.g.dynamicAmplitude * 2;
                 const bgVal = hashBg > this.g.backgroundDensity ? Math.floor(hashBg * amp) : 0;
                 const fgVal = hashFg > this.g.foregroundDensity ? Math.floor(hashFg * amp) : 0;

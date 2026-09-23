@@ -21,11 +21,21 @@ export default class NoiseStrategyColourful extends NoiseStrategyBase {
         this.g._makeSeamless(this.g.noiseField, movementDirection);
         this.g.backgroundNoise = new Array(size);
         this.g.foregroundNoise = new Array(size);
-        for (let i = 0; i < size; i++) {
-            const gray = this.g.noiseField[i];
-            // colourful uses same value for both
-            this.g.backgroundNoise[i] = gray;
-            this.g.foregroundNoise[i] = gray;
+        if (this.g.usesSharedField) {
+            // v6 SHARED (the original study's colourful behaviour): one spot field, both regions.
+            for (let i = 0; i < size; i++) {
+                const gray = this.g.noiseField[i];
+                this.g.backgroundNoise[i] = gray;
+                this.g.foregroundNoise[i] = gray;
+            }
+        } else {
+            // v6 INDEPENDENT: a second, separately drawn spot field for the foreground.
+            const second = this.generateNoiseMap();
+            this.g._makeSeamless(second, movementDirection);
+            for (let i = 0; i < size; i++) {
+                this.g.backgroundNoise[i] = this.g.noiseField[i];
+                this.g.foregroundNoise[i] = second[i];
+            }
         }
         return { noiseField: this.g.noiseField, backgroundNoise: this.g.backgroundNoise, foregroundNoise: this.g.foregroundNoise };
     }

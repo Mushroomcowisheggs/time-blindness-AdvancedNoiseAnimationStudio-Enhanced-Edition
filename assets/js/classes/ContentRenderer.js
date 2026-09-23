@@ -111,7 +111,7 @@ export default class ContentRenderer {
         const mCanvas = document.createElement('canvas');
         mCanvas.width = this.width;
         mCanvas.height = this.height;
-        const mCtx = mCanvas.getContext('2d', { willReadFrequently: true });
+        const mCtx = mCanvas.getContext('2d');
         mCtx.clearRect(0, 0, this.width, this.height);
         
         const { contentType, currentText, currentImage, contentX, contentY, shapeType, fontSize, shapeSize, shapeSides } = this;

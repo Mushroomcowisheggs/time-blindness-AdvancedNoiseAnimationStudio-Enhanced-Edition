@@ -10,7 +10,8 @@ class AnimationState {
             enableOpposingMotion: false,
             unifiedGradient: false,
             gradientRawMode: true,
-            noiseType: 'grayscale'
+            noiseType: 'grayscale',
+            noiseFieldMode: 'independent'
         };
     }
 

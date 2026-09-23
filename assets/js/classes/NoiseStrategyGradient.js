@@ -31,14 +31,22 @@ export default class NoiseStrategyGradient extends NoiseStrategyBase {
 
         const useRaw = this.g.gradientRawMode;   // User choice from generator
 
+        // v6: in INDEPENDENT mode a second, separate field is drawn for the foreground. Note the
+        // gradient's RAW mode (a smooth horizontal ramp) is spatially smooth, so two independently
+        // dithered draws still share the same large-scale ramp; the independence that matters here is
+        // the dither, which is what per-pixel noise is made of.
+        const second = this.g.usesSharedField ? null : this.generateNoiseMap();
+        if (second) this.g._makeSeamless(second, movementDirection);
+
         for (let i = 0; i < size; i++) {
             const gray = this.g.noiseField[i];
             if (useRaw) {
                 this.g.backgroundNoise[i] = gray;
-                this.g.foregroundNoise[i] = gray;
+                this.g.foregroundNoise[i] = second ? second[i] : gray;
             } else {
+                const g2 = second ? second[i] : gray;
                 this.g.backgroundNoise[i] = (gray / 255) >= this.g.backgroundDensity ? 255 : 0;
-                this.g.foregroundNoise[i] = (gray / 255) >= this.g.foregroundDensity ? 255 : 0;
+                this.g.foregroundNoise[i] = (g2 / 255) >= this.g.foregroundDensity ? 255 : 0;
             }
         }
 

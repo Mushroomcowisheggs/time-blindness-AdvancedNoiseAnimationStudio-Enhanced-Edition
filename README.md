@@ -46,7 +46,41 @@ Supported algorithms:
 - **Colourful** – colour spots at the given density: the noise value only gates whether a spot exists (> 0), while the colour comes from a coordinate- and time-derived colour map shared by foreground and background.
 - **Dynamic** – time‑varying block‑based hash noise (fully seamless).
 
-Each noise type exposes its own set of sliders. **Field sharing differs per noise type in content mode:** Colourful, Perlin and Gradient render foreground and background from ONE shared noise field (for Colourful the foreground-density slider is disabled for exactly this reason), whereas Binary and Dynamic generate two independent fields. This distinction matters for anyone writing motion-boundary or displacement checks: for the shared-field types the foreground and background are related *within a single frame* (a foreground pixel at row y samples the same field row as a background pixel at row y - 2*O_bg, where O_bg is the background offset), so a frame-to-frame roll-match is the wrong instrument for those types.
+Each noise type exposes its own set of sliders.
+
+**Field sharing is now a USER CHOICE (new in v6), not a fixed property of the noise type.** The **Noise
+Field** selector offers:
+
+- **Two independent fields** — the background and the digit region are two separately drawn random fields.
+  A single frame is therefore pure noise and **only motion reveals the boundary**. (This was v5's
+  behaviour for Binary and Dynamic.)
+- **One shared field** — a single draw is used for both regions, each sampling it at its own offset, so the
+  digit region is a rigid **shifted copy** of the background and its outline is already visible in a
+  single frame. (This was v5's behaviour for Colourful, Perlin and Gradient, always.)
+
+Why this matters: the two settings are **different experiments**, and the project needs to switch between
+them cleanly. With independent fields, a frame-to-frame roll-match finds the boundary; with a shared field
+the foreground and background are related *within a single frame* (a foreground pixel at row y samples the
+same field row as a background pixel at row y − 2·O_bg, where O_bg is the background offset), so
+roll-match is the wrong instrument there. Being able to hold everything else fixed and flip only this one
+property is the point.
+
+#### v6 change log
+
+| area | change |
+|---|---|
+| `UIController` / HTML | new **Noise Field** selector (`noiseFieldMode`: `independent` \| `shared`) |
+| `AnimationState` | new `noiseFieldMode` key, default `independent` |
+| `NoiseStrategyBinary` | content mode: shared = one draw copied to both; independent = second draw (v5 behaviour) |
+| `NoiseStrategyPerlin` | **fix**: `PerlinNoise` cached gradients keyed only by coordinate, and the permutation table was constant, so a second `generateNoiseMap()` call returned the *same* field — independent mode was impossible for Perlin. The table is now shuffled per **seed**, and independent mode draws its foreground from seed 1. Seed 0 keeps the original studio table byte-for-byte, so the default texture is unchanged. |
+| `NoiseStrategyGradient` | content mode: independent draws a second dithered field |
+| `NoiseStrategyColourful` | content mode: independent draws a second spot field |
+| `NoiseStrategyDynamic` | shared uses `hash(bx,by,t,0)` for both; independent keeps seeds 0 and 1 |
+
+Verified with Node against all **5 noise types × 2 modes**: shared gives `foregroundNoise === backgroundNoise`
+(100.0 % pixel-identical), independent gives distinct fields (24.9 %–89.4 % identical), with no
+undefined/NaN values in either.
+
 
 #### FAQ
 

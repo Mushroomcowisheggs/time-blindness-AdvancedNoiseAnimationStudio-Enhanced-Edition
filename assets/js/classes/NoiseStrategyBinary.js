@@ -26,8 +26,17 @@ export default class NoiseStrategyBinary extends NoiseStrategyBase {
             if (this.g.foregroundNoise.length !== size) this.g.foregroundNoise = new Array(size);
             this.g._generateBinaryNoise(this.g.backgroundNoise, this.g.backgroundDensity);
             this.g._makeSeamless(this.g.backgroundNoise, movementDirection);
-            this.g._generateBinaryNoise(this.g.foregroundNoise, this.g.foregroundDensity);
-            this.g._makeSeamless(this.g.foregroundNoise, movementDirection);
+            if (this.g.usesSharedField) {
+                // v6 SHARED: ONE draw used by both regions. The digit region then shows the same
+                // texture as the background at a different offset, so its edges are visible in a
+                // single frame. Values are COPIED rather than aliased, so downstream writes to one
+                // region cannot silently corrupt the other.
+                for (let i = 0; i < size; i++) this.g.foregroundNoise[i] = this.g.backgroundNoise[i];
+            } else {
+                // v6 INDEPENDENT (the original study's binary behaviour): a second, separate draw.
+                this.g._generateBinaryNoise(this.g.foregroundNoise, this.g.foregroundDensity);
+                this.g._makeSeamless(this.g.foregroundNoise, movementDirection);
+            }
             this.g.noiseField = new Uint8ClampedArray(this.g.backgroundNoise);
         } else {
             this.g.noiseField = this.generateNoiseMap();
