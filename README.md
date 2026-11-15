@@ -127,6 +127,8 @@ This enhanced edition provides **five noise families** under the same animation 
 
 **Current models fail on all noise types** – that is expected. The value of this extension lies in **future experiments**: when someone builds a model that *can* decode binary‑noise words, we can immediately ask whether it also understands Perlin‑coded shapes. If not, the model is still “time‑blind” in a broader sense.
 
+## Note: Not all the video outputs with noise exhibit the characteristic of motion time blindness. According to our initial tests, Binary and Gradient still have no static cues at all, Colourful may have a slight cue, while Perlin and Dynamic will have obvious static cues for models specifically trained for this task. This highlights the necessity of excluding the possibility of static cues.
+
 ---
 
 ## Batch Processing Pipeline
